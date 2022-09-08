@@ -8,14 +8,13 @@
 import UIKit
 
 protocol IGHomeFeedHeaderTableViewCellDelegate: AnyObject {
-    func didTapMoreButton(with model: UserPost, position: Int)
+    func didTapMoreButton(with model: UserPost)
 }
 
 class IGHomeFeedHeaderTableViewCell: UITableViewCell {
     
     static let identifier = "IGHomeFeedHeaderTableViewCell"
     private var model: UserPost?
-    private var position: Int?
     weak var delegate: IGHomeFeedHeaderTableViewCellDelegate?
     
     let profileImageView: UIImageView = {
@@ -64,7 +63,6 @@ class IGHomeFeedHeaderTableViewCell: UITableViewCell {
         profileImageView.image = nil
         nameLabel.text = nil
         model = nil
-        position = nil
     }
     
     private func configureSubviews(){
@@ -89,13 +87,12 @@ class IGHomeFeedHeaderTableViewCell: UITableViewCell {
     }
     
     @objc private func moreButtonTapped(){
-        guard let myModel = model , let myPosition = position else { return }
-        delegate?.didTapMoreButton(with: myModel, position: myPosition)
+        guard let myModel = model  else { return }
+        delegate?.didTapMoreButton(with: myModel)
     }
     
-    func configure(with model: UserPost, position: Int){
+    func configure(with model: UserPost){
         self.model = model
-        self.position = position
         self.nameLabel.text = model.user.username
         self.profileImageView.loadImage(with: model.user.profilePhoto)
     }

@@ -41,11 +41,10 @@ class PostViewController: UIViewController {
         return table
     }()
     
-    private let model: UserPost?
+    private let model: UserPost
+    private var renderPost = [HomeRenderViewModel]()
     
-    private var renderPost = [PostRenderViewModel]()
-    
-    init(model: UserPost?) {
+    init(model: UserPost) {
         self.model = model
         super.init(nibName: nil, bundle: nil)
     }
@@ -69,58 +68,78 @@ class PostViewController: UIViewController {
     }
     
     func mockData() {
-        renderPost = [PostRenderViewModel(renderType: .header(user: model!.user)),
-                      PostRenderViewModel(renderType: .primaryContent(provider: model!)),
-                      PostRenderViewModel(renderType: .actions(provider: nil)),
-                      PostRenderViewModel(renderType: .comments(comments: model!.comments))]
+        renderPost.append(HomeRenderViewModel(
+            header: PostRenderViewModel(renderType: .header(user: model.user)),
+            post: PostRenderViewModel(renderType: .primaryContent(provider: model)),
+            action: PostRenderViewModel(renderType: .actions(provider: nil)),
+            comments: PostRenderViewModel(renderType: .comments(comments: model.comments))))
     }
 }
 
 
 extension PostViewController: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return renderPost.count
+        return renderPost.count * 4
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch renderPost[section].renderType{
-        case .header(_):
+        
+        let x = section
+        let position = x % 4 == 0 ? x/4 : (x - (x % 4))/4
+        let renderModel = renderPost[position]
+        
+        if x % 4 == 0 {
             return 1
-        case.primaryContent(_):
+        }else if x % 4 == 1{
             return 1
-        case.actions(_):
+        }else if x % 4 == 2{
             return 1
-        case .comments(let comments):
-            return comments.count > 4 ? 4 : comments.count
+        }else if x % 4 == 3{
+            switch renderModel.comments.renderType{
+            case .comments(let comments):
+                return comments.count > 4 ? 4 : comments.count
+            case .actions, .primaryContent, .header:
+                return 0
+            }
         }
+        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let renderModel = renderPost[indexPath.section]
-        switch renderModel.renderType{
-        case .header(_):
-            let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedHeaderTableViewCell.identifier, for: indexPath) as! IGHomeFeedHeaderTableViewCell
-            return cell
-            
-        case .primaryContent(let post):
-            let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedTableViewCell.identifier, for: indexPath) as! IGHomeFeedTableViewCell
-            print(post.postURL)
-            return cell
-            
-        case .actions(_):
-            let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedActionTableViewCell.identifier, for: indexPath) as! IGHomeFeedActionTableViewCell
+        
+        let x = indexPath.section
+        let position = x % 4 == 0 ? x/4 : (x - (x % 4))/4
+        let renderModel = renderPost[position]
+        
+        if x % 4 == 0 {
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: IGHomeFeedHeaderTableViewCell.identifier,
+                for: indexPath) as? IGHomeFeedHeaderTableViewCell else { return UITableViewCell() }
             cell.delegate = self
+            cell.configure(with: model)
             return cell
-            
-        case .comments(let comments):
-            let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedGeneralTableViewCell.identifier, for: indexPath) as! IGHomeFeedGeneralTableViewCell
-            print(comments[indexPath.row].username)
-            print(comments[indexPath.row].text)
-            print(comments[indexPath.row].identifier)
-            print(comments[indexPath.row].createdDate)
-            debugPrint()
+        }else if x % 4 == 1 {
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: IGHomeFeedTableViewCell.identifier,
+                for: indexPath) as? IGHomeFeedTableViewCell else { return UITableViewCell() }
+            cell.configure(with: model)
+            return cell
+        }else if x % 4 == 2 {
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: IGHomeFeedActionTableViewCell.identifier,
+                for: indexPath) as? IGHomeFeedActionTableViewCell else { return UITableViewCell() }
+            cell.delegate = self
+            cell.configure(with: renderModel, position: position)
+            return cell
+        }else if x % 4 == 3 {
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: IGHomeFeedGeneralTableViewCell.identifier,
+                for: indexPath) as? IGHomeFeedGeneralTableViewCell else { return UITableViewCell() }
             return cell
         }
+        
+        //should not trigger
+        return UITableViewCell()
     }
     
     
@@ -130,22 +149,25 @@ extension PostViewController: UITableViewDelegate, UITableViewDataSource {
     
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        let renderModel = renderPost[indexPath.section]
-        switch renderModel.renderType{
-        case .header(_):
+        
+        let x = indexPath.section
+        if x % 4 == 0 {
             return 72
-        case .primaryContent(_):
+        }else if x % 4 == 1{
             return tableView.width
-        case .actions(_):
+        }else if x % 4 == 2{
             return 62
-        case .comments(_):
+        }else if x % 4 == 3{
             return 72
         }
+        return 0
     }
 }
 
 
-extension PostViewController: IGHomeFeedActionTableViewCellDelegate {
+extension PostViewController: IGHomeFeedHeaderTableViewCellDelegate ,IGHomeFeedActionTableViewCellDelegate {
+    
+    
     func didTapLikeButton(with model: HomeRenderViewModel, position: Int) {
         print("didTapLikeButton")
     }
@@ -156,5 +178,9 @@ extension PostViewController: IGHomeFeedActionTableViewCellDelegate {
     
     func didTapShareButton(with model: HomeRenderViewModel, position: Int) {
         print("didTapShareButton")
+    }
+    
+    func didTapMoreButton(with model: UserPost) {
+        print("didTapMoreButton")
     }
 }

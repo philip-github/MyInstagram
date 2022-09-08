@@ -7,7 +7,6 @@
 
 import UIKit
 import FirebaseAuth
-import SwiftUI
 
 struct HomeRenderViewModel {
     let header: PostRenderViewModel
@@ -18,7 +17,7 @@ struct HomeRenderViewModel {
 
 final class HomeViewController: UIViewController {
     
-    private var renderPost = [HomeRenderViewModel]()
+    private(set) var renderPost = [HomeRenderViewModel]()
     private var postModel = [UserPost]()
     
     private let tableView: UITableView = {
@@ -186,7 +185,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         if x % 4 == 0{
             let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedHeaderTableViewCell.identifier, for: indexPath) as! IGHomeFeedHeaderTableViewCell
             cell.delegate = self
-            cell.configure(with: postModel, position: position)
+            cell.configure(with: postModel)
             return cell
         }else if x % 4 == 1{
             let cell = tableView.dequeueReusableCell(withIdentifier: IGHomeFeedTableViewCell.identifier, for: indexPath) as! IGHomeFeedTableViewCell
@@ -224,19 +223,19 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         return 0
     }
     
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = UIView()
-        view.backgroundColor = .secondarySystemBackground
-        return section % 4 == 0 ? view : nil
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 0 {
-            return 0
-        }
-        let subSection = section % 4
-        return subSection % 4 == 0 ? 70 : 0
-    }
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let view = UIView()
+//        view.backgroundColor = .secondarySystemBackground
+//        return section % 4 == 0 ? view : nil
+//    }
+//
+//    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        if section == 0 {
+//            return 0
+//        }
+//        let subSection = section % 4
+//        return subSection % 4 == 0 ? 70 : 0
+//    }
 }
 
 
@@ -257,7 +256,7 @@ extension HomeViewController: IGHomeFeedHeaderTableViewCellDelegate, IGHomeFeedA
         print("didTapShareButton")
     }
     
-    func didTapMoreButton(with model: UserPost, position: Int) {
+    func didTapMoreButton(with model: UserPost) {
         let actionSheet = UIAlertController(title: "Post Options",
                                             message: nil,
                                             preferredStyle: .actionSheet)

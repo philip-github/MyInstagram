@@ -27,6 +27,7 @@ class IGHomeFeedTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .systemBackground
         contentView.clipsToBounds = true
+        contentView.layer.masksToBounds = true
         contentView.layer.addSublayer(playerLayer)
         contentView.addSubview(postImageView)
     }

@@ -82,7 +82,6 @@ class IGHomeFeedActionTableViewCell: UITableViewCell {
                                   y: contentView.height/2 - ((contentView.height - 20)/2)/2,
                                   width: (contentView.height - 20)/2,
                                   height: (contentView.height - 20)/2)
-        likeButton.layer.cornerRadius = likeButton.height/2
         
         
         commentButton.frame = CGRect(x: likeButton.right + 15,
@@ -143,7 +142,13 @@ class IGHomeFeedActionTableViewCell: UITableViewCell {
             likeButton.tintColor = .systemRed
         case .actions(provider: .unlike):
             likeButton.setBackgroundImage(Constants.heartImage, for: .normal)
-        case .comments, .primaryContent, .header, .actions(provider: .none), .actions(provider: .some(.comment)), .actions(provider: .some(.share)):
+        case .actions(provider: .none):
+            likeButton.setBackgroundImage(Constants.heartImage, for: .normal)
+        case .comments,
+                .primaryContent,
+                .header,
+                .actions(provider: .some(.comment)),
+                .actions(provider: .some(.share)):
             break
         }
     }
